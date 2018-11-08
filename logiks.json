@@ -1,0 +1,30 @@
+{
+    "name": "mapps",
+    "version": "1.0.0",
+    "type": "module",
+    "package":"olgks.mapps",
+    "app": "*",
+    "privilege": "*",
+    "description": "Logiks Plugin to Support Mobile App based auth verification and data handling.",
+    "keywords": "logiks,modules,mapps",
+    "license": "MIT",
+    "marketid": "",
+    "homepage": "https://github.com/LogiksPlugins/mapps",
+    "bugs": "https://github.com/LogiksPlugins/mapps/issues",
+    "private": false,
+    "permissions": "",
+    "dependencies": {
+        "core": 4
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/LogiksPlugins/mapps.git"
+    },
+    "authors": [
+        {
+            "name": "OpenLogiks Team",
+            "email": "admin@openlogiks.org",
+            "authorid":"olgksadmin"
+        }
+    ]
+}
