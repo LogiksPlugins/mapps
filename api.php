@@ -5,6 +5,7 @@ if(!function_exists("setupMAUTHEnviroment")) {
 
   function setupMAUTHEnviroment() {
     if(isset($_GET['scmd']) && $_GET['scmd']=="auth") return;
+    if(!defined("SERVICE_ROOT")) return;
     
     $_HEADERS = getallheaders();
     if(isset($_HEADERS['token']) && strlen($_HEADERS['token'])>1) {
@@ -14,6 +15,16 @@ if(!function_exists("setupMAUTHEnviroment")) {
       $tokenData = $jwt->decodeToken($token);
 
       if($tokenData) {
+        if($tokenData['exp']<time()) {
+            printServiceErrorMsg(401,"Please login to continue");
+            exit();
+        }
+        // if($_REQUEST['site']!=$tokenData["site"]) {
+        //     printServiceErrorMsg(401,"Please login to continue for this site");
+        //     exit();
+        // }
+        //$tokenData["site"]        //SESS_LOGIN_SITE
+
         $_SESSION['SESS_GUID']=$tokenData["guid"];
         $_SESSION['SESS_USER_NAME']=$tokenData["username"];
 
@@ -39,9 +50,22 @@ if(!function_exists("setupMAUTHEnviroment")) {
         
         $_SESSION['MAUTH_KEY']=$tokenData["authkey"];
       } else {
-        trigger_logikserror(901, E_USER_ERROR);
+        printServiceErrorMsg(401,"Please login to continue");
+        exit();
       }
     }
+  }
+
+  function sessUserInfo($var) {
+    if(substr($var,0,5)=="SESS_") {
+        if(in_array($var,["SESS_TOKEN","SESS_SITEID"])) {//,"SESS_LOGIN_SITE"
+            return false;
+        }
+        return true;
+    } elseif(in_array($var,[])) {//,"ROLESGLOBAL","SCOPEMAP","siteList"
+        return true;
+    }
+    return false;
   }
 }
 ?>
