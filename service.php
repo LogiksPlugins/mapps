@@ -81,7 +81,7 @@ switch($_REQUEST['action']) {
     printServiceMsg($sqlObj->_GET());
     break;
   case "lingbook":
-    $ling=Lingulizer::getInstance();
+    $ling=Lingualizer::getInstance();
     printServiceMsg($ling->lang);
     break;
   case "feeds"://notifications
