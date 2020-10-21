@@ -132,6 +132,7 @@ if(!function_exists("setupMAUTHEnviroment")) {
     function getTextBetweenTags($string, $tagname) {
         $pattern = "/<$tagname ?.*>(.*)<\/$tagname>/";
         preg_match($pattern, $string, $matches);
+        if(!isset($matches[1])) return $string;
         return $matches[1];
     }
 
