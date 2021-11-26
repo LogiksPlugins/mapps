@@ -12,7 +12,11 @@ if(!function_exists("_service_feeds")) {
 	      return "Resource Does Not Exist";
 	    }
 	    if(isset($_POST['cmd'])) {
-	      return "{$_POST['cmd']} Not Found";
+	    	if(!is_file(MAPPS_RESOURCE_DIR."cmds/{$_POST['cmd']}.php")) {
+	    		include_once MAPPS_RESOURCE_DIR."cmds/{$_POST['cmd']}.php";
+	    	} else {
+	    		return "{$_POST['cmd']} Not Found";
+	    	}
 	    } else {
 	      return "No Command Defined";
 	    }
@@ -38,7 +42,7 @@ if(!function_exists("_service_feeds")) {
 		return [];
 	}
 
-	//messages from notifyMatrix
+	//messages from messages/notifyMatrix
 	function _service_msgs() {
 		return [];
 	}

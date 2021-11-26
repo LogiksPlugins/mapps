@@ -273,5 +273,9 @@ if(!function_exists("_service_menu")) {
 		
 		printInfoviewMobile($infoviewConfig,$infoviewConfig['dbkey'],["md5(id)"=>$_GET['refid']]);
 	}
+
+	function _service_infovisual() {
+		
+	}
 }
 ?>
