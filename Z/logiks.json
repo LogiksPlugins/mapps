@@ -1,0 +1,28 @@
+{
+    "name": "Logiks MAPPS",
+    "version": "1.0",
+    "status": "alpha",
+    "type": "module",
+    "package":"olgks.mapps",
+    "description": "MAPPS plugin allows remote login from mobile apps.",
+    "keywords": "logiks,modules,mapps",
+    "license": "MIT",
+    "marketid": "",
+    "homepage": "https://github.com/LogiksPlugins/mapps",
+    "bugs": "https://github.com/LogiksPlugins/mapps/issues",
+    "private": false,
+    "dependencies": {
+        "core": "+4.0.0",
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/LogiksPlugins/mapps.git"
+    },
+    "authors": [
+        {
+            "name": "OpenLogiks Team",
+            "email": "admin@openlogiks.org",
+            "authorid":"olgksadmin"
+        }
+    ]
+}
