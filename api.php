@@ -45,6 +45,10 @@ if(!function_exists("setupMAUTHEnviroment")) {
 
         $_HEADERS = getallheaders();
 
+        if(!isset($_HEADERS['Authorization'])) {
+          // return false;
+        }
+
         if(isset($_HEADERS['appkey'])  && strlen($_HEADERS['appkey'])>1) {
             $appkey = $_HEADERS['appkey'];
             define("MAPPS_APP_KEY", $appkey);
