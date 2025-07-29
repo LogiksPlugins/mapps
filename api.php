@@ -41,37 +41,77 @@ if(!function_exists("setupMAUTHEnviroment")) {
         define("MAPPS_APP_SITE", $mappInfo['app_site']);
         define("MAPPS_DEFAULT_POLICIES", json_encode($mappInfo['default_policies']));
 
-        if($mappInfo['single_device']=='true') {
-            $mobData1 = _db(true)->_selectQ("mapps_devices", "*", [
-                "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
-                "app_key"=> $mappInfo['app_id'],
-                "userid"=> $_SESSION['SESS_USER_ID'],
-                "device_uuid"=> (isset($_HEADERS['x-device-uuid'])?$_HEADERS['x-device-uuid']:"-"),
-                "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
-                "is_active"=>"true"
-            ])->_GET();
+        $reqArr = explode("/", current(explode("?", $_SERVER['REQUEST_URI'])));
 
+        $geolocation = (isset($_REQUEST['geolocation'])?$_REQUEST['geolocation']:(isset($_HEADERS['x-device-geoloc'])?$_HEADERS['x-device-geoloc']:"0,0"));
 
-            if($mobData1) {
-                _db(true)->_updateQ("mapps_devices", [
-                    "access_count"=> ((int)$mobData1[0]['access_count'])+1,
-                    "last_accessed"=> date("Y-m-d H:i:s"),
-                    "ip_address"=> get_client_ip(),
-                    "geolocation"=> (isset($_REQUEST['geolocation'])?$_REQUEST['geolocation']:"0,0"),
-                ],[
-                    "id"=> $mobData1[0]['id']
-                ])->_RUN();
-            } else {
-                $mobData2 = _db(true)->_selectQ("mapps_devices", "*", [
+        if(in_array(end($reqArr), ["me"])) {
+            if($mappInfo['single_device']=='true') {
+                $mobData1 = _db(true)->_selectQ("mapps_devices", "*", [
                     "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
                     "app_key"=> $mappInfo['app_id'],
                     "userid"=> $_SESSION['SESS_USER_ID'],
+                    "device_uuid"=> (isset($_HEADERS['x-device-uuid'])?$_HEADERS['x-device-uuid']:"-"),
+                    "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
                     "is_active"=>"true"
                 ])->_GET();
 
-                if($mobData2) {
-                    printServiceErrorMsg(406,"Only one device is allowed for user, please contact admin for further actions");
-                    exit();
+
+                if($mobData1) {
+                    _db(true)->_updateQ("mapps_devices", [
+                        "access_count"=> ((int)$mobData1[0]['access_count'])+1,
+                        "last_accessed"=> date("Y-m-d H:i:s"),
+                        "ip_address"=> get_client_ip(),
+                        "geolocation"=> $geolocation,
+                    ],[
+                        "id"=> $mobData1[0]['id']
+                    ])->_RUN();
+                } else {
+                    $mobData2 = _db(true)->_selectQ("mapps_devices", "*", [
+                        "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
+                        "app_key"=> $mappInfo['app_id'],
+                        "userid"=> $_SESSION['SESS_USER_ID'],
+                        "is_active"=>"true"
+                    ])->_GET();
+
+                    if($mobData2) {
+                        printServiceErrorMsg(406,"Only one device is allowed for user, please contact admin for further actions");
+                        exit();
+                    } else {
+                        _db(true)->_insertQ1("mapps_devices", [
+                            "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
+                            "app_key"=> $mappInfo['app_id'],
+                            "userid"=> $_SESSION['SESS_USER_ID'],
+                            "device_uuid"=> (isset($_HEADERS['x-device-uuid'])?$_HEADERS['x-device-uuid']:"-"),
+                            "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
+                            "os_version"=> (isset($_HEADERS['x-device-os'])?$_HEADERS['x-device-os']:"-"),
+                            "ip_address"=> get_client_ip(),
+                            "geolocation"=> $geolocation,
+                            "last_accessed"=> date("Y-m-d H:i:s"),
+                            "access_count"=> 1,
+                        ])->_RUN();
+                    }
+                }
+            } else {
+                $mobData1 = _db(true)->_selectQ("mapps_devices", "*", [
+                    "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
+                    "app_key"=> $mappInfo['app_id'],
+                    "userid"=> $_SESSION['SESS_USER_ID'],
+                    "device_uuid"=> (isset($_HEADERS['x-device-uuid'])?$_HEADERS['x-device-uuid']:"-"),
+                    "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
+                    "is_active"=>"true"
+                ])->_GET();
+
+
+                if($mobData1) {
+                    _db(true)->_updateQ("mapps_devices", [
+                        "access_count"=> ((int)$mobData1[0]['access_count'])+1,
+                        "last_accessed"=> date("Y-m-d H:i:s"),
+                        "ip_address"=> get_client_ip(),
+                        "geolocation"=> $geolocation,
+                    ],[
+                        "id"=> $mobData1[0]['id']
+                    ])->_RUN();
                 } else {
                     _db(true)->_insertQ1("mapps_devices", [
                         "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
@@ -81,49 +121,15 @@ if(!function_exists("setupMAUTHEnviroment")) {
                         "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
                         "os_version"=> (isset($_HEADERS['x-device-os'])?$_HEADERS['x-device-os']:"-"),
                         "ip_address"=> get_client_ip(),
-                        "geolocation"=> (isset($_REQUEST['geolocation'])?$_REQUEST['geolocation']:"0,0"),
+                        "geolocation"=> $geolocation,
                         "last_accessed"=> date("Y-m-d H:i:s"),
                         "access_count"=> 1,
                     ])->_RUN();
                 }
+
             }
-        } else {
-            $mobData1 = _db(true)->_selectQ("mapps_devices", "*", [
-                "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
-                "app_key"=> $mappInfo['app_id'],
-                "userid"=> $_SESSION['SESS_USER_ID'],
-                "device_uuid"=> (isset($_HEADERS['x-device-uuid'])?$_HEADERS['x-device-uuid']:"-"),
-                "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
-                "is_active"=>"true"
-            ])->_GET();
-
-
-            if($mobData1) {
-                _db(true)->_updateQ("mapps_devices", [
-                    "access_count"=> ((int)$mobData1[0]['access_count'])+1,
-                    "last_accessed"=> date("Y-m-d H:i:s"),
-                    "ip_address"=> get_client_ip(),
-                    "geolocation"=> (isset($_REQUEST['geolocation'])?$_REQUEST['geolocation']:"0,0"),
-                ],[
-                    "id"=> $mobData1[0]['id']
-                ])->_RUN();
-            } else {
-                _db(true)->_insertQ1("mapps_devices", [
-                    "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
-                    "app_key"=> $mappInfo['app_id'],
-                    "userid"=> $_SESSION['SESS_USER_ID'],
-                    "device_uuid"=> (isset($_HEADERS['x-device-uuid'])?$_HEADERS['x-device-uuid']:"-"),
-                    "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
-                    "os_version"=> (isset($_HEADERS['x-device-os'])?$_HEADERS['x-device-os']:"-"),
-                    "ip_address"=> get_client_ip(),
-                    "geolocation"=> (isset($_REQUEST['geolocation'])?$_REQUEST['geolocation']:"0,0"),
-                    "last_accessed"=> date("Y-m-d H:i:s"),
-                    "access_count"=> 1,
-                ])->_RUN();
-            }
-
         }
-        
+        // printArray();exit();
         // printServiceErrorMsg(406,"X123");
         // exit();
     }
@@ -244,3 +250,4 @@ if(!function_exists("setupMAUTHEnviroment")) {
         return $funcKey;
     }
 }
+
