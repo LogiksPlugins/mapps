@@ -6,10 +6,15 @@ if(!function_exists("setupMAUTHEnviroment")) {
     include_once __DIR__."/datacontrols.php";
     include_once __DIR__."/dev.php";
 
+    //To Enable Device Control
+    // $_HEADERS['x-device-uuid']
+    // $_HEADERS['x-device-model']
+    // $_HEADERS['x-device-os']
+
     function setupMAPPEnviroment() {
         define("MAPPS_RESOURCE_DIR", APPROOT."misc/mapps/");
 
-        $mappInfo = _db(true)->_selectQ("mapps_tbl","id as app_id,app_key,app_secret,app_site,app_name,default_policies",[
+        $mappInfo = _db(true)->_selectQ("mapps_tbl","id as app_id,app_key,app_secret,app_site,app_name,default_policies,single_device",[
                     "blocked"=>"false",
                     "md5(app_key)"=>md5(MAPPS_APP_KEY)
                 ])->_GET();
@@ -18,6 +23,8 @@ if(!function_exists("setupMAUTHEnviroment")) {
             printServiceErrorMsg(406,"Mobile App Expired or Not Updated<br>Please try updating the app from the appstore");
             exit();
         }
+        
+        $_HEADERS = getallheaders();
 
         $mappInfo = $mappInfo[0];
         if($mappInfo['default_policies']==null || strlen($mappInfo['default_policies'])<=0) {
@@ -32,6 +39,92 @@ if(!function_exists("setupMAUTHEnviroment")) {
         define("MAPPS_APP_NAME", $mappInfo['app_name']);
         define("MAPPS_APP_SITE", $mappInfo['app_site']);
         define("MAPPS_DEFAULT_POLICIES", json_encode($mappInfo['default_policies']));
+
+        if($mappInfo['single_device']=='true') {
+            $mobData1 = _db(true)->_selectQ("mapps_devices", "*", [
+                "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
+                "app_key"=> $mappInfo['app_id'],
+                "userid"=> $_SESSION['SESS_USER_ID'],
+                "device_uuid"=> (isset($_HEADERS['x-device-uuid'])?$_HEADERS['x-device-uuid']:"-"),
+                "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
+                "is_active"=>"true"
+            ])->_GET();
+
+
+            if($mobData1) {
+                _db(true)->_updateQ("mapps_devices", [
+                    "access_count"=> ((int)$mobData1[0]['access_count'])+1,
+                    "last_accessed"=> date("Y-m-d H:i:s"),
+                    "ip_address"=> get_client_ip(),
+                    "geolocation"=> (isset($_REQUEST['geolocation'])?$_REQUEST['geolocation']:"0,0"),
+                ],[
+                    "id"=> $mobData1[0]['id']
+                ])->_RUN();
+            } else {
+                $mobData2 = _db(true)->_selectQ("mapps_devices", "*", [
+                    "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
+                    "app_key"=> $mappInfo['app_id'],
+                    "userid"=> $_SESSION['SESS_USER_ID'],
+                    "is_active"=>"true"
+                ])->_GET();
+
+                if($mobData2) {
+                    printServiceErrorMsg(406,"Only one device is allowed for user, please contact admin for further actions");
+                    exit();
+                } else {
+                    _db(true)->_insertQ1("mapps_devices", [
+                        "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
+                        "app_key"=> $mappInfo['app_id'],
+                        "userid"=> $_SESSION['SESS_USER_ID'],
+                        "device_uuid"=> (isset($_HEADERS['x-device-uuid'])?$_HEADERS['x-device-uuid']:"-"),
+                        "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
+                        "os_version"=> (isset($_HEADERS['x-device-os'])?$_HEADERS['x-device-os']:"-"),
+                        "ip_address"=> get_client_ip(),
+                        "geolocation"=> (isset($_REQUEST['geolocation'])?$_REQUEST['geolocation']:"0,0"),
+                        "last_accessed"=> date("Y-m-d H:i:s"),
+                        "access_count"=> 1,
+                    ])->_RUN();
+                }
+            }
+        } else {
+            $mobData1 = _db(true)->_selectQ("mapps_devices", "*", [
+                "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
+                "app_key"=> $mappInfo['app_id'],
+                "userid"=> $_SESSION['SESS_USER_ID'],
+                "device_uuid"=> (isset($_HEADERS['x-device-uuid'])?$_HEADERS['x-device-uuid']:"-"),
+                "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
+                "is_active"=>"true"
+            ])->_GET();
+
+
+            if($mobData1) {
+                _db(true)->_updateQ("mapps_devices", [
+                    "access_count"=> ((int)$mobData1[0]['access_count'])+1,
+                    "last_accessed"=> date("Y-m-d H:i:s"),
+                    "ip_address"=> get_client_ip(),
+                    "geolocation"=> (isset($_REQUEST['geolocation'])?$_REQUEST['geolocation']:"0,0"),
+                ],[
+                    "id"=> $mobData1[0]['id']
+                ])->_RUN();
+            } else {
+                _db(true)->_insertQ1("mapps_devices", [
+                    "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
+                    "app_key"=> $mappInfo['app_id'],
+                    "userid"=> $_SESSION['SESS_USER_ID'],
+                    "device_uuid"=> (isset($_HEADERS['x-device-uuid'])?$_HEADERS['x-device-uuid']:"-"),
+                    "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
+                    "os_version"=> (isset($_HEADERS['x-device-os'])?$_HEADERS['x-device-os']:"-"),
+                    "ip_address"=> get_client_ip(),
+                    "geolocation"=> (isset($_REQUEST['geolocation'])?$_REQUEST['geolocation']:"0,0"),
+                    "last_accessed"=> date("Y-m-d H:i:s"),
+                    "access_count"=> 1,
+                ])->_RUN();
+            }
+
+        }
+        
+        // printServiceErrorMsg(406,"X123");
+        // exit();
     }
 
     function setupMAUTHEnviroment() {
@@ -150,4 +243,3 @@ if(!function_exists("setupMAUTHEnviroment")) {
         return $funcKey;
     }
 }
-?>
