@@ -32,7 +32,8 @@ if(!function_exists("setupMAUTHEnviroment")) {
         }
         $mappInfo['default_policies'] = json_decode($mappInfo['default_policies'], true);
         if($mappInfo['default_policies']==null) $mappInfo['default_policies'] = [];
-
+        if(!isset($mappInfo['single_device'])) $mappInfo['single_device'] = "false";
+        
         $_SESSION['SESS_MAPPS'] = $mappInfo;
 
         define("MAPPS_APP_SECRET", $mappInfo['app_secret']);
