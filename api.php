@@ -53,7 +53,8 @@ if(!function_exists("setupMAUTHEnviroment")) {
                     "userid"=> $_SESSION['SESS_USER_ID'],
                     "device_uuid"=> (isset($_HEADERS['x-device-uuid'])?$_HEADERS['x-device-uuid']:"-"),
                     "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
-                    "is_active"=>"true"
+                    "is_active"=>"true",
+                    "blocked"=>"false"
                 ])->_GET();
 
 
@@ -71,7 +72,8 @@ if(!function_exists("setupMAUTHEnviroment")) {
                         "guid"=> (isset($_SESSION['SESS_GUID'])?$_SESSION['SESS_GUID']:"-"),
                         "app_key"=> $mappInfo['app_id'],
                         "userid"=> $_SESSION['SESS_USER_ID'],
-                        "is_active"=>"true"
+                        "is_active"=>"true",
+                        "blocked"=>"false"
                     ])->_GET();
 
                     if($mobData2) {
@@ -99,7 +101,8 @@ if(!function_exists("setupMAUTHEnviroment")) {
                     "userid"=> $_SESSION['SESS_USER_ID'],
                     "device_uuid"=> (isset($_HEADERS['x-device-uuid'])?$_HEADERS['x-device-uuid']:"-"),
                     "device_model"=> (isset($_HEADERS['x-device-model'])?$_HEADERS['x-device-model']:"-"),
-                    "is_active"=>"true"
+                    "is_active"=>"true",
+                    "blocked"=>"false"
                 ])->_GET();
 
 
